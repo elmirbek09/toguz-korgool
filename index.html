@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ky">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тогуз коргоол</title>
+<style>
+:root{--felt:#17233f;--felt2:#22345c;--red:#a3281f;--wool:#efe7d6;--gold:#d9a21b;--sky:#2a8c8c}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--felt);color:var(--wool);font-family:Georgia,"Times New Roman",serif;display:flex;justify-content:center;padding:10px;
+background-image:repeating-linear-gradient(45deg,transparent 0 22px,rgba(255,255,255,.03) 22px 24px),repeating-linear-gradient(-45deg,transparent 0 22px,rgba(255,255,255,.03) 22px 24px)}
+main{width:100%;max-width:880px}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+h1{margin:6px 0;font-size:clamp(22px,5vw,36px);color:var(--gold);font-weight:700;letter-spacing:.5px}
+.lang button{background:none;border:1px solid var(--gold);color:var(--wool);padding:5px 10px;border-radius:2px;cursor:pointer;font:inherit}
+.lang button.on{background:var(--gold);color:var(--felt);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.card{background:var(--felt2);border:2px solid var(--red);padding:16px;margin:12px 0;border-radius:4px}
+.card h2{margin:0 0 10px;font-size:20px;color:var(--gold)}
+.btn{background:var(--red);color:var(--wool);border:0;padding:10px 16px;font:inherit;font-size:16px;cursor:pointer;border-radius:3px;margin:4px 6px 4px 0}
+.btn:hover{background:#c2352a}
+.btn.alt{background:transparent;border:1px solid var(--wool)}
+input,select{font:inherit;font-size:16px;padding:9px;background:var(--wool);color:var(--felt);border:0;border-radius:3px}
+input{width:130px;text-transform:uppercase;letter-spacing:2px}
+.hide{display:none!important}
+#status{text-align:center;font-size:19px;min-height:30px;margin:8px 0;color:var(--gold)}
+#board{background:var(--felt2);padding:10px;border:3px solid var(--red);border-radius:4px;box-shadow:0 0 0 3px var(--gold),0 0 0 8px var(--felt),0 0 0 10px var(--red);margin:14px 6px}
+.line{display:flex;align-items:center;gap:8px;padding:6px 0}
+.line+.line{border-top:2px dashed rgba(217,162,27,.5)}
+.row{flex:1;display:grid;grid-template-columns:repeat(9,1fr);gap:clamp(3px,1vw,10px)}
+.kz{width:clamp(54px,13vw,96px);aspect-ratio:1.1;background:var(--felt);border:2px solid var(--gold);border-radius:0 0 50% 50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:clamp(20px,5vw,32px);font-weight:700}
+.kz small{font-size:11px;font-weight:400;color:var(--gold)}
+.pit{aspect-ratio:1;border-radius:50%;border:2px solid var(--wool);background:radial-gradient(circle at 35% 30%,#3a5088,var(--felt));color:var(--wool);font:700 clamp(14px,3.6vw,26px) Georgia,serif;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:0;transition:transform .15s}
+.pit small{font-size:10px;font-weight:400;opacity:.6;line-height:1}
+.pit:disabled{cursor:default;opacity:.85}
+.pit:not(:disabled):hover{transform:scale(1.08);border-color:var(--gold)}
+.pit.last{box-shadow:0 0 0 3px var(--sky)}
+.pit.tuz{background:radial-gradient(circle,var(--gold) 0 18%,transparent 19%),repeating-conic-gradient(var(--red) 0 15deg,var(--felt) 15deg 30deg);border-color:var(--gold);color:var(--wool);font-size:clamp(14px,3.6vw,24px)}
+.pit.tuz.t1{border-color:var(--sky)}
+.pit.tuz small{color:var(--wool);opacity:1}
+.rules{font-size:14px;line-height:1.55;max-width:70ch;opacity:.9}
+#code{font-size:26px;letter-spacing:4px;color:var(--gold)}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <h1 data-i="title"></h1>
+ <div class="lang"><button data-l="ky">Кыргызча</button> <button data-l="ru">Русский</button> <button data-l="en">English</button></div>
+</header>
+
+<section id="menu">
+ <div class="card">
+  <h2 data-i="ai"></h2>
+  <select id="lvl"><option value="1" data-i="easy"></option><option value="3" data-i="mid" selected></option><option value="5" data-i="hard"></option></select>
+  <button class="btn" id="bAi" data-i="play"></button>
+ </div>
+ <div class="card">
+  <h2 data-i="loc"></h2>
+  <button class="btn" id="bLoc" data-i="play"></button>
+ </div>
+ <div class="card">
+  <h2 data-i="onl"></h2>
+  <button class="btn" id="bHost" data-i="create"></button><br>
+  <input id="join" maxlength="5" placeholder="XXXXX" aria-label="code">
+  <button class="btn alt" id="bJoin" data-i="join"></button>
+  <p id="onlMsg"></p>
+ </div>
+ <p class="rules" data-i="rules"></p>
+</section>
+
+<section id="game" class="hide">
+ <div id="status" aria-live="polite"></div>
+ <div id="board">
+  <div class="line"><div class="kz"><span id="kt">0</span><small id="nt"></small></div><div class="row" id="top"></div></div>
+  <div class="line"><div class="kz"><span id="kb">0</span><small id="nb"></small></div><div class="row" id="bot"></div></div>
+ </div>
+ <button class="btn" id="bNew" data-i="new"></button>
+ <button class="btn alt" id="bMenu" data-i="menu"></button>
+</section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script>
+const T={
+ky:{title:"Тогуз коргоол",ai:"Компьютерге каршы",loc:"Эки оюнчу (бир түзмөк)",onl:"Онлайн оюн",easy:"Жеңил",mid:"Орточо",hard:"Кыйын",play:"Ойноо",create:"Бөлмө түзүү",join:"Кошулуу",
+wait:"Каршылашты күтүүдө. Бөлмөнүн коду:",conn:"Туташууда…",err:"Туташуу катасы. Кодду текшерип, кайра аракет кылыңыз.",noNet:"Онлайн үчүн интернет керек. Калган режимдер интернетсиз иштейт.",
+you:"Сиздин жүрүш",opp:"Каршылаштын жүрүшү",turn:"жүрүшү",win:"Сиз жеңдиңиз!",lose:"Сиз утулдуңуз",draw:"Тең чыгуу",won:"жеңди",new:"Жаңы оюн",menu:"Меню",p1:"Ак",p2:"Кара",kz:"коргоол",
+rules:"Эреже: ар бир уяда 9 коргоол. Жүргөндө коргоолдор саат жебесине каршы бирден таратылат, биринчиси өз уяңа түшөт. Акыркысы каршылаштын уясында жуп сан кылса — алынат. 3 болсо жана ал 9-уя болбосо — ал уя «туздук» болот: ага түшкөн коргоолдор сизге кетет. 82 коргоол топтогон жеңет."},
+ru:{title:"Тогуз коргоол",ai:"Против компьютера",loc:"Двое на одном устройстве",onl:"Онлайн-игра",easy:"Лёгкий",mid:"Средний",hard:"Сложный",play:"Играть",create:"Создать комнату",join:"Войти",
+wait:"Ждём соперника. Код комнаты:",conn:"Подключение…",err:"Ошибка подключения. Проверьте код и попробуйте снова.",noNet:"Для онлайна нужен интернет. Остальные режимы работают без сети.",
+you:"Ваш ход",opp:"Ход соперника",turn:"ходят",win:"Вы победили!",lose:"Вы проиграли",draw:"Ничья",won:"победили",new:"Новая игра",menu:"Меню",p1:"Белые",p2:"Чёрные",kz:"коргоолов",
+rules:"Правила: в каждой лунке 9 коргоолов. При ходе камни раскладываются по одному против часовой стрелки, первый кладётся в ту же лунку. Если последний камень попал в лунку соперника и там стало чётное число — вы забираете их. Если стало 3 (и это не 9-я лунка) — лунка становится «туздыком»: все камни, попавшие в неё, идут вам. Побеждает тот, кто набрал 82 коргоола."},
+en:{title:"Toguz Korgool",ai:"Play the computer",loc:"Two players, one device",onl:"Play online",easy:"Easy",mid:"Medium",hard:"Hard",play:"Play",create:"Create room",join:"Join",
+wait:"Waiting for opponent. Room code:",conn:"Connecting…",err:"Connection failed. Check the code and try again.",noNet:"Online play needs internet. The other modes work offline.",
+you:"Your move",opp:"Opponent's move",turn:"to move",win:"You won!",lose:"You lost",draw:"Draw",won:"wins",new:"New game",menu:"Menu",p1:"White",p2:"Black",kz:"stones",
+rules:"Rules: each hole starts with 9 stones. A move sows the stones one by one counter-clockwise, the first into the same hole. If the last stone lands on the opponent's side and makes an even count, you capture it. If it makes 3 (not in hole 9), that hole becomes a tuzdyk: every stone dropped in it goes to you. First to 82 wins."}
+};
+let lang=localStorage.getItem("tk-lang")||(/^ky/.test(navigator.language)?"ky":/^ru/.test(navigator.language)?"ru":"en");
+const t=k=>T[lang][k];
+const $=id=>document.getElementById(id);
+
+/* ---------- game engine ---------- */
+const fresh=()=>({b:Array(18).fill(9),k:[0,0],t:[-1,-1],turn:0,last:-1,over:false});
+const clone=s=>({b:s.b.slice(),k:s.k.slice(),t:s.t.slice(),turn:s.turn,last:s.last,over:false});
+const side=p=>[...Array(9)].map((_,j)=>p*9+j);
+const moves=s=>side(s.turn).filter(i=>s.b[i]>0);
+function play(s,i){
+ const p=s.turn,b=s.b,n=b[i];b[i]=0;
+ let pos=n==1?(i+1)%18:i,last=pos;
+ for(let c=0;c<n;c++){last=pos;const o=s.t.indexOf(pos);if(o>=0)s.k[o]++;else b[pos]++;pos=(pos+1)%18}
+ if(((last/9)|0)!=p&&s.t.indexOf(last)<0){
+  const v=b[last],l=last%9;
+  if(v%2==0){s.k[p]+=v;b[last]=0}
+  else if(v==3&&s.t[p]<0&&l!=8&&(s.t[1-p]<0||s.t[1-p]%9!=l)){s.t[p]=last;s.k[p]+=3;b[last]=0}
+ }
+ s.turn=1-p;s.last=last;
+ if(!moves(s).length){side(p).forEach(j=>{s.k[p]+=b[j];b[j]=0});s.over=true}
+ else if(s.k[0]>=82||s.k[1]>=82)s.over=true;
+ return s;
+}
+
+/* ---------- computer opponent ---------- */
+const ev=(s,m)=>s.k[m]-s.k[1-m]+(s.t[m]>=0?6:0)-(s.t[1-m]>=0?6:0);
+function ab(s,d,a,b,m){
+ if(d==0||s.over)return ev(s,m);
+ const mx=s.turn==m;let best=mx?-1e9:1e9;
+ for(const i of moves(s)){
+  const v=ab(play(clone(s),i),d-1,a,b,m);
+  if(mx){best=Math.max(best,v);a=Math.max(a,v)}else{best=Math.min(best,v);b=Math.min(b,v)}
+  if(b<=a)break;
+ }
+ return best;
+}
+function aiMove(){
+ const ms=moves(S),m=S.turn,lv=+$("lvl").value;
+ if(lv==1)return ms[Math.random()*ms.length|0];
+ let bi=ms[0],bv=-1e9;
+ for(const i of ms){const v=ab(play(clone(S),i),lv-1,-1e9,1e9,m)+Math.random()*.1;if(v>bv){bv=v;bi=i}}
+ return bi;
+}
+
+/* ---------- UI ---------- */
+let S,mode,me=0,peer,conn;
+const view=()=>mode=="local"?0:me;
+const canClick=i=>!S.over&&S.b[i]>0&&((i/9)|0)==S.turn&&(mode=="local"||S.turn==me);
+function draw(el,idx){
+ el.innerHTML="";
+ idx.forEach(i=>{
+  const o=S.t.indexOf(i),d=document.createElement("button");
+  d.className="pit"+(o>=0?" tuz t"+o:"")+(i==S.last?" last":"");
+  d.innerHTML=(o>=0?"":S.b[i])+"<small>"+(i%9+1)+"</small>";
+  d.disabled=!canClick(i);
+  d.onclick=()=>click(i);
+  el.appendChild(d);
+ });
+}
+function names(){return[t("p1"),t("p2")]}
+function render(){
+ const v=view();
+ draw($("bot"),side(v));
+ draw($("top"),side(1-v).reverse());
+ $("kb").textContent=S.k[v];$("kt").textContent=S.k[1-v];
+ $("nb").textContent=$("nt").textContent=t("kz");
+ let s;
+ if(S.over){
+  const w=S.k[0]>S.k[1]?0:S.k[1]>S.k[0]?1:-1;
+  s=w<0?t("draw"):mode=="local"?names()[w]+" "+t("won"):w==v?t("win"):t("lose");
+ }else s=mode=="local"?names()[S.turn]+" "+t("turn"):S.turn==me?t("you"):t("opp");
+ $("status").textContent=s;
+}
+function apply(i){
+ S=play(S,i);render();
+ if(mode=="ai"&&!S.over&&S.turn==1)setTimeout(()=>apply(aiMove()),600);
+}
+function click(i){
+ if(!canClick(i))return;
+ if(mode=="online")conn.send({i});
+ apply(i);
+}
+function show(g){$("menu").classList.toggle("hide",g);$("game").classList.toggle("hide",!g)}
+function start(m){mode=m;S=fresh();show(true);$("bNew").classList.toggle("hide",m=="online");render()}
+
+/* ---------- online (peer-to-peer, no own server needed) ---------- */
+function bind(){
+ conn.on("data",d=>{if(d&&Number.isInteger(d.i)&&S&&S.turn!=me&&S.b[d.i]>0&&((d.i/9)|0)==S.turn)apply(d.i)});
+ const go=()=>start("online");
+ if(conn.open)go();else conn.on("open",go);
+ conn.on("close",()=>{if(mode=="online"&&!S.over){$("onlMsg").textContent=t("err");show(false)}});
+}
+function needNet(){if(typeof Peer=="undefined"||!navigator.onLine){$("onlMsg").textContent=t("noNet");return true}}
+$("bHost").onclick=()=>{
+ if(needNet())return;
+ const code=Math.random().toString(36).slice(2,7).toUpperCase();
+ me=0;peer=new Peer("tkorgool-"+code);
+ peer.on("open",()=>{$("onlMsg").innerHTML=t("wait")+' <b id="code">'+code+"</b>"});
+ peer.on("connection",c=>{conn=c;bind()});
+ peer.on("error",()=>{$("onlMsg").textContent=t("err")});
+};
+$("bJoin").onclick=()=>{
+ if(needNet())return;
+ const code=$("join").value.trim().toUpperCase();if(code.length<5)return;
+ me=1;$("onlMsg").textContent=t("conn");
+ peer=new Peer();
+ peer.on("open",()=>{conn=peer.connect("tkorgool-"+code);bind()});
+ peer.on("error",()=>{$("onlMsg").textContent=t("err")});
+};
+$("bAi").onclick=()=>{me=0;start("ai")};
+$("bLoc").onclick=()=>start("local");
+$("bNew").onclick=()=>{if(mode=="online"){leave();return}start(mode)};
+$("bMenu").onclick=()=>leave();
+function leave(){try{conn&&conn.close();peer&&peer.destroy()}catch(e){}conn=peer=null;$("onlMsg").textContent="";show(false)}
+
+/* ---------- language ---------- */
+function setLang(l){
+ lang=l;localStorage.setItem("tk-lang",l);
+ document.documentElement.lang=l;document.title=t("title");
+ document.querySelectorAll("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));
+ document.querySelectorAll("[data-l]").forEach(b=>b.classList.toggle("on",b.dataset.l==l));
+ if(S&&!$("game").classList.contains("hide"))render();
+}
+document.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+setLang(lang);
+</script>
+</body>
+</html>
